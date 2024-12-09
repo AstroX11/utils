@@ -1,13 +1,25 @@
 {
-  "dependencies": {
-    "file-type": "16.5.3"
-  },
   "name": "utils",
   "version": "1.0.0",
-  "description": "A simple utilty pack for xstro",
+  "description": "A simple utility pack for xstro",
+  "type": "module",
   "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build"
+  },
   "repository": "https://github.com/AstroX11/utils.git",
   "author": "AstroX10 <danielfx0012@gmail.com>",
   "license": "MIT",
-  "private": false
+  "private": false,
+  "dependencies": {
+    "file-type": "^19.6.0",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "@types/node-fetch": "^2.6.9",
+    "typescript": "^5.3.3"
+  }
 }

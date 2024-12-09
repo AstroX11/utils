@@ -1,24 +1,108 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.FileTypeFromStream = exports.FileTypeFromBlob = exports.FileTypeFromBuffer = exports.FileTypeFromUrl = exports.getBufferFromStream = exports.getStreamFromBuffer = exports.extractUrlFromString = exports.bufferToFile = exports.transformBuffer = exports.jsontoBuffer = exports.buffertoJson = exports.getBuffer = exports.postJson = exports.getJson = exports.toBuffer = exports.detectType = void 0;
-const base_1 = require("./src/base");
-Object.defineProperty(exports, "getJson", { enumerable: true, get: function () { return base_1.getJson; } });
-Object.defineProperty(exports, "postJson", { enumerable: true, get: function () { return base_1.postJson; } });
-Object.defineProperty(exports, "getBuffer", { enumerable: true, get: function () { return base_1.getBuffer; } });
-const base_2_1 = require("./src/base_2");
-Object.defineProperty(exports, "buffertoJson", { enumerable: true, get: function () { return base_2_1.buffertoJson; } });
-Object.defineProperty(exports, "jsontoBuffer", { enumerable: true, get: function () { return base_2_1.jsontoBuffer; } });
-Object.defineProperty(exports, "transformBuffer", { enumerable: true, get: function () { return base_2_1.transformBuffer; } });
-Object.defineProperty(exports, "bufferToFile", { enumerable: true, get: function () { return base_2_1.bufferToFile; } });
-Object.defineProperty(exports, "toBuffer", { enumerable: true, get: function () { return base_2_1.toBuffer; } });
-const base_3_1 = require("./src/base_3");
-Object.defineProperty(exports, "extractUrlFromString", { enumerable: true, get: function () { return base_3_1.extractUrlFromString; } });
-Object.defineProperty(exports, "getStreamFromBuffer", { enumerable: true, get: function () { return base_3_1.getStreamFromBuffer; } });
-Object.defineProperty(exports, "getBufferFromStream", { enumerable: true, get: function () { return base_3_1.getBufferFromStream; } });
-const base_4_1 = require("./src/base_4");
-Object.defineProperty(exports, "FileTypeFromUrl", { enumerable: true, get: function () { return base_4_1.FileTypeFromUrl; } });
-Object.defineProperty(exports, "FileTypeFromBuffer", { enumerable: true, get: function () { return base_4_1.FileTypeFromBuffer; } });
-Object.defineProperty(exports, "FileTypeFromBlob", { enumerable: true, get: function () { return base_4_1.FileTypeFromBlob; } });
-Object.defineProperty(exports, "FileTypeFromStream", { enumerable: true, get: function () { return base_4_1.FileTypeFromStream; } });
-const base_5_1 = require("./src/base_5");
-Object.defineProperty(exports, "detectType", { enumerable: true, get: function () { return base_5_1.detectType; } });
+import * as fs from 'fs';
+import * as stream from 'stream';
+import { fileTypeFromBuffer } from 'file-type';
+import fetch from 'node-fetch';
+export const buffertoJson = (buffer) => {
+    return JSON.parse(buffer.toString('utf-8'));
+};
+export const jsontoBuffer = (json) => {
+    return Buffer.from(JSON.stringify(json));
+};
+export const transformBuffer = (buffer, transformFn) => {
+    return transformFn(buffer);
+};
+export const bufferToFile = (buffer, filePath) => {
+    fs.writeFileSync(filePath, buffer);
+};
+export function toBuffer(data) {
+    if (data instanceof Buffer)
+        return data;
+    if (typeof data === 'string')
+        return Buffer.from(data);
+    return Buffer.from(JSON.stringify(data));
+}
+export const extractUrlFromString = (str) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const matches = str.match(urlRegex);
+    return matches ? matches[0] : null;
+};
+export const getBufferFromStream = async (stream) => {
+    return new Promise((resolve, reject) => {
+        const chunks = [];
+        stream.on('data', chunk => chunks.push(chunk));
+        stream.on('end', () => resolve(Buffer.concat(chunks)));
+        stream.on('error', reject);
+    });
+};
+export const getStreamFromBuffer = (buffer) => {
+    const readable = new stream.Readable();
+    readable.push(buffer);
+    readable.push(null);
+    return readable;
+};
+export const FileTypeFromUrl = async (url) => {
+    const response = await fetch(url);
+    const buffer = await response.buffer();
+    const typeResult = await fileTypeFromBuffer(buffer);
+    return typeResult ? typeResult.mime : null;
+};
+export const FileTypeFromBuffer = async (buffer) => {
+    const typeResult = await fileTypeFromBuffer(buffer);
+    return typeResult ? typeResult.mime : null;
+};
+export const FileTypeFromBlob = async (blob) => {
+    const buffer = await blob.arrayBuffer().then(Buffer.from);
+    const typeResult = await fileTypeFromBuffer(buffer);
+    return typeResult ? typeResult.mime : null;
+};
+export const FileTypeFromStream = async (stream) => {
+    const buffer = await getBufferFromStream(stream);
+    const typeResult = await fileTypeFromBuffer(buffer);
+    return typeResult ? typeResult.mime : null;
+};
+export async function detectType(content) {
+    let buffer;
+    if (typeof content === 'string') {
+        if (content.startsWith('http')) {
+            const response = await fetch(content);
+            buffer = await response.buffer();
+        }
+        else {
+            buffer = Buffer.from(content);
+        }
+    }
+    else {
+        buffer = content;
+    }
+    const mimeType = await FileTypeFromBuffer(buffer);
+    if (!mimeType)
+        return 'text';
+    if (mimeType.startsWith('image/'))
+        return 'image';
+    if (mimeType.startsWith('video/'))
+        return 'video';
+    if (mimeType.startsWith('audio/'))
+        return 'audio';
+    if (mimeType.includes('pdf') || mimeType.includes('document'))
+        return 'document';
+    return 'text';
+}
+export const getJson = async (url) => {
+    const response = await fetch(url);
+    return response.json();
+};
+export const postJson = async (url, data) => {
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    });
+    return response.json();
+};
+export const getBuffer = async (url) => {
+    const response = await fetch(url);
+    return response.buffer();
+};
+//# sourceMappingURL=index.js.map
