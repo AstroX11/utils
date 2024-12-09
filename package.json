@@ -1,5 +1,13 @@
 {
   "dependencies": {
     "file-type": "16.5.3"
-  }
+  },
+  "name": "utils",
+  "version": "1.0.0",
+  "description": "A simple utilty pack for xstro",
+  "main": "index.js",
+  "repository": "https://github.com/AstroX11/utils.git",
+  "author": "AstroX10 <danielfx0012@gmail.com>",
+  "license": "MIT",
+  "private": false
 }
