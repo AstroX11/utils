@@ -25,10 +25,10 @@ export function toBuffer(data: any): Buffer {
 	return Buffer.from(JSON.stringify(data));
 }
 
-export const extractUrlFromString = (str: string): string | null => {
+export const extractUrlFromString = (str: string): string | '' => {
 	const urlRegex = /(https?:\/\/[^\s]+)/g;
 	const matches = str.match(urlRegex);
-	return matches ? matches[0] : null;
+	return matches ? matches[0] : '';
 };
 
 export const getBufferFromStream = async (stream: stream.Readable): Promise<Buffer> => {
@@ -75,26 +75,40 @@ export async function detectType(content: string | Buffer): Promise<string> {
 	let buffer: Buffer;
 
 	if (typeof content === 'string') {
-		if (content.startsWith('http')) {
-			const response = await fetch(content);
-			buffer = await response.buffer();
-		} else {
-			buffer = Buffer.from(content);
+		try {
+			if (content.startsWith('http')) {
+				const url = extractUrlFromString(content);
+				const response = await fetch(url);
+				if (!response.ok) throw new Error('Failed to fetch content');
+				buffer = await response.buffer();
+			} else {
+				buffer = Buffer.from(content, 'base64');
+			}
+		} catch (error) {
+			return 'invalid';
 		}
 	} else {
 		buffer = content;
 	}
 
 	const mimeType = await FileTypeFromBuffer(buffer);
-
 	if (!mimeType) return 'text';
 
-	if (mimeType.startsWith('image/')) return 'image';
-	if (mimeType.startsWith('video/')) return 'video';
-	if (mimeType.startsWith('audio/')) return 'audio';
-	if (mimeType.includes('pdf') || mimeType.includes('document')) return 'document';
+	const typeMap: Record<string, string[]> = {
+		image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+		video: ['video/mp4', 'video/mkv', 'video/webm'],
+		audio: ['audio/mpeg', 'audio/ogg', 'audio/wav'],
+		document: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+		sticker: ['image/webp'],
+	};
 
-	return 'text';
+	for (const [type, patterns] of Object.entries(typeMap)) {
+		if (patterns.includes(mimeType)) {
+			return type;
+		}
+	}
+
+	return 'unknown';
 }
 
 export const getJson = async (url: string): Promise<any> => {

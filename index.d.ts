@@ -4,7 +4,7 @@ export declare const jsontoBuffer: (json: object) => Buffer;
 export declare const transformBuffer: (buffer: Buffer, transformFn: (data: Buffer) => Buffer) => Buffer;
 export declare const bufferToFile: (buffer: Buffer, filePath: string) => void;
 export declare function toBuffer(data: any): Buffer;
-export declare const extractUrlFromString: (str: string) => string | null;
+export declare const extractUrlFromString: (str: string) => string | "";
 export declare const getBufferFromStream: (stream: stream.Readable) => Promise<Buffer>;
 export declare const getStreamFromBuffer: (buffer: Buffer) => stream.Readable;
 export declare const FileTypeFromUrl: (url: string) => Promise<string | null>;
