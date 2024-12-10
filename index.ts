@@ -47,28 +47,44 @@ export const getStreamFromBuffer = (buffer: Buffer): stream.Readable => {
 	return readable;
 };
 
+const mimeToExtensionMap: Record<string, string> = {
+	'image/jpeg': 'jpg',
+	'image/png': 'png',
+	'image/gif': 'gif',
+	'image/webp': 'webp',
+	'video/mp4': 'mp4',
+	'video/mkv': 'mkv',
+	'video/webm': 'webm',
+	'audio/mpeg': 'mp3',
+	'audio/ogg': 'ogg',
+	'audio/wav': 'wav',
+	'application/pdf': 'pdf',
+	'application/msword': 'doc',
+	'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+};
+
 export const FileTypeFromUrl = async (url: string): Promise<string | null> => {
 	const response = await fetch(url);
 	const buffer = await response.buffer();
 	const typeResult = await fileTypeFromBuffer(buffer);
-	return typeResult ? typeResult.mime : null;
+	return typeResult ? mimeToExtensionMap[typeResult.mime] || typeResult.ext : null;
 };
 
 export const FileTypeFromBuffer = async (buffer: Buffer): Promise<string | null> => {
 	const typeResult = await fileTypeFromBuffer(buffer);
-	return typeResult ? typeResult.mime : null;
+	return typeResult ? mimeToExtensionMap[typeResult.mime] || typeResult.ext : null;
 };
 
 export const FileTypeFromBlob = async (blob: Blob): Promise<string | null> => {
 	const buffer = await blob.arrayBuffer().then(Buffer.from);
 	const typeResult = await fileTypeFromBuffer(buffer);
-	return typeResult ? typeResult.mime : null;
+	return typeResult ? mimeToExtensionMap[typeResult.mime] || typeResult.ext : null;
 };
 
 export const FileTypeFromStream = async (stream: stream.Readable): Promise<string | null> => {
 	const buffer = await getBufferFromStream(stream);
 	const typeResult = await fileTypeFromBuffer(buffer);
-	return typeResult ? typeResult.mime : null;
+	return typeResult ? mimeToExtensionMap[typeResult.mime] || typeResult.ext : null;
 };
 
 export async function detectType(content: string | Buffer): Promise<string> {
@@ -91,19 +107,19 @@ export async function detectType(content: string | Buffer): Promise<string> {
 		buffer = content;
 	}
 
-	const mimeType = await FileTypeFromBuffer(buffer);
-	if (!mimeType) return 'text';
+	const fileExt = await FileTypeFromBuffer(buffer);
+	if (!fileExt) return 'text';
 
 	const typeMap: Record<string, string[]> = {
-		image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
-		video: ['video/mp4', 'video/mkv', 'video/webm'],
-		audio: ['audio/mpeg', 'audio/ogg', 'audio/wav'],
-		document: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-		sticker: ['image/webp'],
+		image: ['jpg', 'png', 'gif', 'webp'],
+		video: ['mp4', 'mkv', 'webm'],
+		audio: ['mp3', 'ogg', 'wav'],
+		document: ['pdf', 'doc', 'docx'],
+		sticker: ['webp'],
 	};
 
 	for (const [type, patterns] of Object.entries(typeMap)) {
-		if (patterns.includes(mimeType)) {
+		if (patterns.includes(fileExt)) {
 			return type;
 		}
 	}
