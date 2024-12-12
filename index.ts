@@ -2,65 +2,6 @@ import * as fs from 'fs';
 import * as stream from 'stream';
 import { fileTypeFromBuffer } from 'file-type';
 import fetch from 'node-fetch';
-import { z } from 'zod';
-
-interface RequestOptions {
-	headers?: Record<string, string>;
-	timeout?: number;
-	retries?: number;
-	validateSchema?: z.ZodType;
-}
-
-export const fetchWithRetry = async <T = any>(
-	url: string,
-	options: RequestOptions & {
-		method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
-		body?: any;
-	} = {},
-): Promise<T> => {
-	const { method = 'GET', body, headers = {}, timeout = 5000, retries = 3, validateSchema } = options;
-
-	const controller = new AbortController();
-	const id = setTimeout(() => controller.abort(), timeout);
-
-	try {
-		for (let attempt = 1; attempt <= retries; attempt++) {
-			try {
-				const fetchOptions: RequestInit = {
-					method,
-					headers: {
-						'Content-Type': 'application/json',
-						...headers,
-					},
-					signal: controller.signal,
-					...(body ? { body: JSON.stringify(body) } : {}),
-				};
-
-				const response = await fetch(url, fetchOptions);
-
-				if (!response.ok) {
-					throw new Error(`HTTP error! status: ${response.status}`);
-				}
-
-				const data = await response.json();
-
-				// Optional schema validation
-				if (validateSchema) {
-					return validateSchema.parse(data);
-				}
-
-				return data;
-			} catch (error) {
-				if (attempt === retries) throw error;
-				await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
-			}
-		}
-
-		throw new Error('Max retries exceeded');
-	} finally {
-		clearTimeout(id);
-	}
-};
 
 export const buffertoJson = (buffer: Buffer): any => {
 	return JSON.parse(buffer.toString('utf-8'));
@@ -186,26 +127,23 @@ export async function detectType(content: string | Buffer): Promise<string> {
 	return 'unknown';
 }
 
-export const getJson = (url: string, options: RequestOptions = {}) => fetchWithRetry(url, { method: 'GET', ...options });
+export const getJson = async (url: string): Promise<any> => {
+	const response = await fetch(url);
+	return response.json();
+};
 
-export const postJson = (url: string, data: object, options: RequestOptions = {}) => fetchWithRetry(url, { method: 'POST', body: data, ...options });
+export const postJson = async (url: string, data: object): Promise<any> => {
+	const response = await fetch(url, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify(data),
+	});
+	return response.json();
+};
 
-export const getBuffer = async (url: string, options: RequestOptions = {}): Promise<ArrayBuffer> => {
-	const controller = new AbortController();
-	const id = setTimeout(() => controller.abort(), options.timeout || 5000);
-
-	try {
-		const response = await fetch(url, {
-			signal: controller.signal,
-			headers: options.headers,
-		});
-
-		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
-		}
-
-		return response.arrayBuffer();
-	} finally {
-		clearTimeout(id);
-	}
+export const getBuffer = async (url: string): Promise<Buffer> => {
+	const response = await fetch(url);
+	return response.buffer();
 };
