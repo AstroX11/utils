@@ -1,26 +1,38 @@
 {
-  "name": "xstro-utils",
-  "version": "1.0.0",
-  "description": "A simple utility pack for xstro",
-  "type": "module",
-  "main": "index.js",
-  "types": "index.d.ts",
-  "scripts": {
-    "build": "tsc",
-    "prepare": "npm run build"
-  },
-  "repository": "https://github.com/AstroX11/utils.git",
-  "author": "AstroX10 <danielfx0012@gmail.com>",
-  "license": "MIT",
-  "private": false,
-  "dependencies": {
-    "file-type": "^19.6.0",
-    "node-fetch": "^3.3.2",
-    "xstro-utils": "^1.0.0"
-  },
-  "devDependencies": {
-    "@types/node": "^20.10.5",
-    "@types/node-fetch": "^2.6.9",
-    "typescript": "^5.3.3"
-  }
+	"name": "xstro-utils",
+	"version": "1.0.1",
+	"description": "A simple utility pack for xstro",
+	"type": "module",
+	"main": "index.js",
+	"types": "index.d.ts",
+	"scripts": {
+		"build": "npx tsc",
+		"prepare": "npm run build"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/AstroX11/utils.git"
+	},
+	"keywords": [
+		"utilities",
+		"typescript",
+		"nodejs"
+	],
+	"author": "AstroX10 <danielfx0012@gmail.com>",
+	"license": "MIT",
+	"private": false,
+	"dependencies": {
+		"axios": "^1.7.9",
+		"file-type": "^19.6.0"
+	},
+	"devDependencies": {
+		"@types/node": "^22.10.2",
+		"typescript": "^5.7.2"
+	},
+	"exports": {
+		".": {
+			"types": "./index.d.ts",
+			"import": "./index.js"
+		}
+	}
 }
