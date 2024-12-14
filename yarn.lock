@@ -179,3 +179,11 @@ web-streams-polyfill@^3.0.3:
   version "3.3.3"
   resolved "https://registry.yarnpkg.com/web-streams-polyfill/-/web-streams-polyfill-3.3.3.tgz#2073b91a2fdb1fbfbd401e7de0ac9f8214cecb4b"
   integrity sha512-d2JWLCivmZYTSIoge9MsgFCZrt571BikcWGYkjC1khllbTeDlGqZ2D8vD8E/lJa8WGWbb7Plm8/XJYV7IJHZZw==
+
+xstro-utils@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/xstro-utils/-/xstro-utils-1.0.0.tgz#7561f36e3bff93420aae83c0e2cf9435d17a2d95"
+  integrity sha512-/vek+ZzWax2SlPRgV7/w8CATbmdaB06aaWebBMUf+uspNweSiJT12N2SC2k+h4S2xhgrviYEXzVUq1M+/x/0lw==
+  dependencies:
+    file-type "^19.6.0"
+    node-fetch "^3.3.2"
