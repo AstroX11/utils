@@ -197,4 +197,3 @@ export default {
     getJson,
     postJson,
 };
-//# sourceMappingURL=index.js.map

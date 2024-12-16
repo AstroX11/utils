@@ -35,4 +35,3 @@ declare const _default: {
     postJson: typeof postJson;
 };
 export default _default;
-//# sourceMappingURL=index.d.ts.map
