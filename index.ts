@@ -3,12 +3,6 @@ import { Readable } from 'stream';
 import axios, { AxiosRequestConfig } from 'axios';
 import { fileTypeFromBuffer } from 'file-type';
 
-// Type definitions for enhanced type safety
-type JSONValue = string | number | boolean | null | { [key: string]: JSONValue } | JSONValue[];
-
-type FileType = 'image' | 'video' | 'audio' | 'document' | 'sticker' | 'text' | 'unknown' | 'invalid';
-
-// MIME to Extension mapping with more comprehensive coverage
 const mimeToExtensionMap: Record<string, string> = {
 	'image/jpeg': 'jpg',
 	'image/png': 'png',

@@ -2,7 +2,6 @@ import fs, { readFile } from 'fs/promises';
 import { Readable } from 'stream';
 import axios from 'axios';
 import { fileTypeFromBuffer } from 'file-type';
-// MIME to Extension mapping with more comprehensive coverage
 const mimeToExtensionMap = {
     'image/jpeg': 'jpg',
     'image/png': 'png',
