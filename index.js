@@ -178,7 +178,7 @@ export async function postJson(url, data, options = {}) {
         return err;
     }
 }
-async function getMimeType(input) {
+export async function getMimeType(input) {
     let buffer;
     if (Buffer.isBuffer(input)) {
         buffer = input;

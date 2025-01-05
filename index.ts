@@ -192,7 +192,7 @@ export async function postJson(url: string, data: any, options: AxiosRequestConf
 	}
 }
 
-async function getMimeType(input: any) {
+export async function getMimeType(input: any) {
 	let buffer;
 
 	if (Buffer.isBuffer(input)) {
