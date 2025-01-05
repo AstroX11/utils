@@ -1,4 +1,4 @@
-import fs from 'fs/promises';
+import fs, { readFile } from 'fs/promises';
 import { Readable } from 'stream';
 import axios, { AxiosRequestConfig } from 'axios';
 import { fileTypeFromBuffer } from 'file-type';
@@ -198,6 +198,26 @@ export async function postJson(url: string, data: any, options: AxiosRequestConf
 	}
 }
 
+async function getMimeType(input: any) {
+	let buffer;
+
+	if (Buffer.isBuffer(input)) {
+		buffer = input;
+	} else if (typeof input === 'string') {
+		if (input.startsWith('http')) {
+			const response = await axios.get(input, { responseType: 'arraybuffer' });
+			buffer = Buffer.from(response.data);
+		} else {
+			buffer = await readFile(input);
+		}
+	} else {
+		throw new Error('Input must be a Buffer, file path, or URL.');
+	}
+
+	const type = await fileTypeFromBuffer(buffer);
+	return type?.mime || 'unknown';
+}
+
 export default {
 	buffertoJson,
 	jsontoBuffer,
@@ -215,4 +235,5 @@ export default {
 	getBuffer,
 	getJson,
 	postJson,
+	getMimeType,
 };

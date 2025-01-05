@@ -16,6 +16,7 @@ export declare function detectType(content: string | Buffer): Promise<string>;
 export declare function getBuffer(url: string, options?: AxiosRequestConfig): Promise<Buffer>;
 export declare function getJson(url: string, options?: AxiosRequestConfig): Promise<any>;
 export declare function postJson(url: string, data: any, options?: AxiosRequestConfig): Promise<any>;
+declare function getMimeType(input: any): Promise<"unknown" | import("file-type").MimeType>;
 declare const _default: {
     buffertoJson: (buffer: Buffer) => any;
     jsontoBuffer: (json: object) => Buffer;
@@ -33,5 +34,6 @@ declare const _default: {
     getBuffer: typeof getBuffer;
     getJson: typeof getJson;
     postJson: typeof postJson;
+    getMimeType: typeof getMimeType;
 };
 export default _default;
