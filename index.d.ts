@@ -13,7 +13,11 @@ export declare const FileTypeFromBuffer: (buffer: Buffer) => Promise<string | nu
 export declare const FileTypeFromBlob: (blob: Blob) => Promise<string | null>;
 export declare const FileTypeFromStream: (stream: Readable) => Promise<string | null>;
 export declare function detectType(content: string | Buffer): Promise<string>;
-export declare function getBuffer(url: string, options?: AxiosRequestConfig): Promise<Buffer>;
+interface RetryConfig {
+    maxRetries?: number;
+    retryDelay?: number;
+}
+export declare function getBuffer(url: string, options?: AxiosRequestConfig, retryConfig?: RetryConfig): Promise<Buffer>;
 export declare function getJson(url: string, options?: AxiosRequestConfig): Promise<any>;
 export declare function postJson(url: string, data: any, options?: AxiosRequestConfig): Promise<any>;
 export declare function getMimeType(input: any): Promise<"unknown" | import("file-type").MimeType>;

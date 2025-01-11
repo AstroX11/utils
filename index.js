@@ -26,7 +26,7 @@ const mimeToExtensionMap = {
     'application/vnd.ms-excel': 'xls',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
     'application/vnd.ms-powerpoint': 'ppt',
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx'
 };
 export const buffertoJson = (buffer) => {
     return JSON.parse(buffer.toString('utf-8'));
@@ -114,7 +114,7 @@ export async function detectType(content) {
         video: ['mp4', 'mkv', 'webm'],
         audio: ['mp3', 'ogg', 'wav'],
         document: ['pdf', 'doc', 'docx'],
-        sticker: ['webp'],
+        sticker: ['webp']
     };
     for (const [type, patterns] of Object.entries(typeMap)) {
         if (patterns.includes(fileExt)) {
@@ -123,24 +123,57 @@ export async function detectType(content) {
     }
     return 'unknown';
 }
-export async function getBuffer(url, options = {}) {
-    try {
-        const res = await axios({
-            method: 'get',
-            url,
-            headers: {
-                DNT: 1,
-                'Upgrade-Insecure-Request': 1,
-                ...options.headers,
-            },
-            ...options,
-            responseType: 'arraybuffer',
-        });
-        return res.data;
+export async function getBuffer(url, options = {}, retryConfig = {}) {
+    const { maxRetries = 3, retryDelay = 1000 } = retryConfig;
+    let attempt = 0;
+    while (attempt < maxRetries) {
+        try {
+            const res = await axios({
+                method: 'get',
+                url,
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                    Accept: 'application/octet-stream, text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.5',
+                    DNT: '1',
+                    'Upgrade-Insecure-Requests': '1',
+                    Connection: 'keep-alive',
+                    'Cache-Control': 'max-age=0',
+                    ...options.headers
+                },
+                timeout: 10000, // 10 second timeout
+                maxRedirects: 5,
+                validateStatus: status => status >= 200 && status < 300,
+                ...options,
+                responseType: 'arraybuffer'
+            });
+            return res.data;
+        }
+        catch (error) {
+            attempt++;
+            // Type guard to ensure error is AxiosError
+            const axiosError = error;
+            // If we're out of retries, throw the error
+            if (attempt === maxRetries) {
+                throw new Error(`Failed to fetch buffer after ${maxRetries} attempts. ` +
+                    `URL: ${url}. ` +
+                    `Status: ${axiosError.response?.status}. ` +
+                    `Message: ${axiosError.message}`);
+            }
+            // If the error is a 4xx client error, don't retry
+            if (axiosError.response &&
+                axiosError.response.status >= 400 &&
+                axiosError.response.status < 500) {
+                throw new Error(`Client error: ${axiosError.response.status}. ` +
+                    `URL: ${url}. ` +
+                    `Message: ${axiosError.message}`);
+            }
+            // Wait before retrying
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
+        }
     }
-    catch (error) {
-        throw new Error(`Error fetching buffer: ${error.message}`);
-    }
+    // This should never be reached due to the throw in the loop
+    throw new Error('Unexpected error in retry loop');
 }
 export async function getJson(url, options = {}) {
     try {
@@ -149,9 +182,9 @@ export async function getJson(url, options = {}) {
             url: url,
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36',
-                ...options.headers,
+                ...options.headers
             },
-            ...options,
+            ...options
         });
         return res.data;
     }
@@ -168,9 +201,9 @@ export async function postJson(url, data, options = {}) {
             headers: {
                 'Content-Type': 'application/json',
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36',
-                ...options.headers,
+                ...options.headers
             },
-            ...options,
+            ...options
         });
         return res.data;
     }
@@ -215,5 +248,5 @@ export default {
     getBuffer,
     getJson,
     postJson,
-    getMimeType,
+    getMimeType
 };

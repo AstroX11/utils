@@ -1,6 +1,6 @@
 {
 	"name": "xstro-utils",
-	"version": "1.0.4",
+	"version": "1.0.5",
 	"description": "A simple utility pack for xstro",
 	"type": "module",
 	"main": "index.js",
