@@ -1,7 +1,52 @@
-import fs, { readFile } from 'fs/promises';
-import { Readable } from 'stream';
-import axios from 'axios';
-import { fileTypeFromBuffer } from 'file-type';
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.FileTypeFromStream = exports.FileTypeFromBlob = exports.FileTypeFromBuffer = exports.FileTypeFromUrl = exports.getStreamFromBuffer = exports.getBufferFromStream = exports.extractUrlFromString = exports.bufferToFile = exports.transformBuffer = exports.jsontoBuffer = exports.buffertoJson = void 0;
+exports.toBuffer = toBuffer;
+exports.detectType = detectType;
+exports.getBuffer = getBuffer;
+exports.getJson = getJson;
+exports.postJson = postJson;
+exports.getMimeType = getMimeType;
+const promises_1 = __importStar(require("fs/promises"));
+const stream_1 = require("stream");
+const axios_1 = __importDefault(require("axios"));
+const file_type_1 = require("file-type");
 const mimeToExtensionMap = {
     'image/jpeg': 'jpg',
     'image/png': 'png',
@@ -28,31 +73,36 @@ const mimeToExtensionMap = {
     'application/vnd.ms-powerpoint': 'ppt',
     'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx'
 };
-export const buffertoJson = (buffer) => {
+const buffertoJson = (buffer) => {
     return JSON.parse(buffer.toString('utf-8'));
 };
-export const jsontoBuffer = (json) => {
+exports.buffertoJson = buffertoJson;
+const jsontoBuffer = (json) => {
     return Buffer.from(JSON.stringify(json));
 };
-export const transformBuffer = (buffer, transformFn) => {
+exports.jsontoBuffer = jsontoBuffer;
+const transformBuffer = (buffer, transformFn) => {
     return transformFn(buffer);
 };
-export const bufferToFile = async (buffer, filePath) => {
-    await fs.writeFile(filePath, buffer);
+exports.transformBuffer = transformBuffer;
+const bufferToFile = async (buffer, filePath) => {
+    await promises_1.default.writeFile(filePath, buffer);
 };
-export function toBuffer(data) {
+exports.bufferToFile = bufferToFile;
+function toBuffer(data) {
     if (data instanceof Buffer)
         return data;
     if (typeof data === 'string')
         return Buffer.from(data);
     return Buffer.from(JSON.stringify(data));
 }
-export const extractUrlFromString = (str) => {
+const extractUrlFromString = (str) => {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     const matches = str.match(urlRegex);
     return matches ? matches[0] : '';
 };
-export const getBufferFromStream = async (stream) => {
+exports.extractUrlFromString = extractUrlFromString;
+const getBufferFromStream = async (stream) => {
     return new Promise((resolve, reject) => {
         const chunks = [];
         stream.on('data', chunk => chunks.push(chunk));
@@ -60,39 +110,45 @@ export const getBufferFromStream = async (stream) => {
         stream.on('error', reject);
     });
 };
-export const getStreamFromBuffer = (buffer) => {
-    const readable = new Readable();
+exports.getBufferFromStream = getBufferFromStream;
+const getStreamFromBuffer = (buffer) => {
+    const readable = new stream_1.Readable();
     readable.push(buffer);
     readable.push(null);
     return readable;
 };
-export const FileTypeFromUrl = async (url) => {
-    const response = await axios.get(url, { responseType: 'arraybuffer' });
+exports.getStreamFromBuffer = getStreamFromBuffer;
+const FileTypeFromUrl = async (url) => {
+    const response = await axios_1.default.get(url, { responseType: 'arraybuffer' });
     const buffer = Buffer.from(response.data);
-    const typeResult = await fileTypeFromBuffer(buffer);
+    const typeResult = await (0, file_type_1.fromBuffer)(buffer);
     return typeResult ? mimeToExtensionMap[typeResult.mime] || typeResult.ext : null;
 };
-export const FileTypeFromBuffer = async (buffer) => {
-    const typeResult = await fileTypeFromBuffer(buffer);
+exports.FileTypeFromUrl = FileTypeFromUrl;
+const FileTypeFromBuffer = async (buffer) => {
+    const typeResult = await (0, file_type_1.fromBuffer)(buffer);
     return typeResult ? mimeToExtensionMap[typeResult.mime] || typeResult.ext : null;
 };
-export const FileTypeFromBlob = async (blob) => {
+exports.FileTypeFromBuffer = FileTypeFromBuffer;
+const FileTypeFromBlob = async (blob) => {
     const buffer = await blob.arrayBuffer().then(Buffer.from);
-    const typeResult = await fileTypeFromBuffer(buffer);
+    const typeResult = await (0, file_type_1.fromBuffer)(buffer);
     return typeResult ? mimeToExtensionMap[typeResult.mime] || typeResult.ext : null;
 };
-export const FileTypeFromStream = async (stream) => {
-    const buffer = await getBufferFromStream(stream);
-    const typeResult = await fileTypeFromBuffer(buffer);
+exports.FileTypeFromBlob = FileTypeFromBlob;
+const FileTypeFromStream = async (stream) => {
+    const buffer = await (0, exports.getBufferFromStream)(stream);
+    const typeResult = await (0, file_type_1.fromBuffer)(buffer);
     return typeResult ? mimeToExtensionMap[typeResult.mime] || typeResult.ext : null;
 };
-export async function detectType(content) {
+exports.FileTypeFromStream = FileTypeFromStream;
+async function detectType(content) {
     let buffer;
     if (typeof content === 'string') {
         try {
             if (content.startsWith('http')) {
-                const url = extractUrlFromString(content);
-                const response = await axios.get(url, { responseType: 'arraybuffer' });
+                const url = (0, exports.extractUrlFromString)(content);
+                const response = await axios_1.default.get(url, { responseType: 'arraybuffer' });
                 buffer = Buffer.from(response.data);
             }
             else {
@@ -106,7 +162,7 @@ export async function detectType(content) {
     else {
         buffer = content;
     }
-    const fileExt = await FileTypeFromBuffer(buffer);
+    const fileExt = await (0, exports.FileTypeFromBuffer)(buffer);
     if (!fileExt)
         return 'text';
     const typeMap = {
@@ -123,12 +179,13 @@ export async function detectType(content) {
     }
     return 'unknown';
 }
-export async function getBuffer(url, options = {}, retryConfig = {}) {
+async function getBuffer(url, options = {}, retryConfig = {}) {
+    var _a;
     const { maxRetries = 3, retryDelay = 1000 } = retryConfig;
     let attempt = 0;
     while (attempt < maxRetries) {
         try {
-            const res = await axios({
+            const res = await (0, axios_1.default)({
                 method: 'get',
                 url,
                 headers: {
@@ -157,7 +214,7 @@ export async function getBuffer(url, options = {}, retryConfig = {}) {
             if (attempt === maxRetries) {
                 throw new Error(`Failed to fetch buffer after ${maxRetries} attempts. ` +
                     `URL: ${url}. ` +
-                    `Status: ${axiosError.response?.status}. ` +
+                    `Status: ${(_a = axiosError.response) === null || _a === void 0 ? void 0 : _a.status}. ` +
                     `Message: ${axiosError.message}`);
             }
             // If the error is a 4xx client error, don't retry
@@ -175,9 +232,9 @@ export async function getBuffer(url, options = {}, retryConfig = {}) {
     // This should never be reached due to the throw in the loop
     throw new Error('Unexpected error in retry loop');
 }
-export async function getJson(url, options = {}) {
+async function getJson(url, options = {}) {
     try {
-        const res = await axios({
+        const res = await (0, axios_1.default)({
             method: 'GET',
             url: url,
             headers: {
@@ -192,9 +249,9 @@ export async function getJson(url, options = {}) {
         return err;
     }
 }
-export async function postJson(url, data, options = {}) {
+async function postJson(url, data, options = {}) {
     try {
-        const res = await axios({
+        const res = await (0, axios_1.default)({
             method: 'POST',
             url: url,
             data: data,
@@ -211,39 +268,39 @@ export async function postJson(url, data, options = {}) {
         return err;
     }
 }
-export async function getMimeType(input) {
+async function getMimeType(input) {
     let buffer;
     if (Buffer.isBuffer(input)) {
         buffer = input;
     }
     else if (typeof input === 'string') {
         if (input.startsWith('http')) {
-            const response = await axios.get(input, { responseType: 'arraybuffer' });
+            const response = await axios_1.default.get(input, { responseType: 'arraybuffer' });
             buffer = Buffer.from(response.data);
         }
         else {
-            buffer = await readFile(input);
+            buffer = await (0, promises_1.readFile)(input);
         }
     }
     else {
         throw new Error('Input must be a Buffer, file path, or URL.');
     }
-    const type = await fileTypeFromBuffer(buffer);
-    return type?.mime || 'unknown';
+    const type = await (0, file_type_1.fromBuffer)(buffer);
+    return (type === null || type === void 0 ? void 0 : type.mime) || 'unknown';
 }
-export default {
-    buffertoJson,
-    jsontoBuffer,
-    transformBuffer,
-    bufferToFile,
+exports.default = {
+    buffertoJson: exports.buffertoJson,
+    jsontoBuffer: exports.jsontoBuffer,
+    transformBuffer: exports.transformBuffer,
+    bufferToFile: exports.bufferToFile,
     toBuffer,
-    extractUrlFromString,
-    getBufferFromStream,
-    getStreamFromBuffer,
-    FileTypeFromUrl,
-    FileTypeFromBuffer,
-    FileTypeFromBlob,
-    FileTypeFromStream,
+    extractUrlFromString: exports.extractUrlFromString,
+    getBufferFromStream: exports.getBufferFromStream,
+    getStreamFromBuffer: exports.getStreamFromBuffer,
+    FileTypeFromUrl: exports.FileTypeFromUrl,
+    FileTypeFromBuffer: exports.FileTypeFromBuffer,
+    FileTypeFromBlob: exports.FileTypeFromBlob,
+    FileTypeFromStream: exports.FileTypeFromStream,
     detectType,
     getBuffer,
     getJson,

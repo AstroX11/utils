@@ -2,7 +2,7 @@ import fs, { readFile } from 'fs/promises';
 import { Readable } from 'stream';
 import axios, { AxiosRequestConfig, AxiosError } from 'axios';
 
-import { fileTypeFromBuffer } from 'file-type';
+import { fromBuffer } from 'file-type';
 
 const mimeToExtensionMap: Record<string, string> = {
 	'image/jpeg': 'jpg',
@@ -78,24 +78,24 @@ export const getStreamFromBuffer = (buffer: Buffer): Readable => {
 export const FileTypeFromUrl = async (url: string): Promise<string | null> => {
 	const response = await axios.get(url, { responseType: 'arraybuffer' });
 	const buffer = Buffer.from(response.data);
-	const typeResult = await fileTypeFromBuffer(buffer);
+	const typeResult = await fromBuffer(buffer);
 	return typeResult ? mimeToExtensionMap[typeResult.mime] || typeResult.ext : null;
 };
 
 export const FileTypeFromBuffer = async (buffer: Buffer): Promise<string | null> => {
-	const typeResult = await fileTypeFromBuffer(buffer);
+	const typeResult = await fromBuffer(buffer);
 	return typeResult ? mimeToExtensionMap[typeResult.mime] || typeResult.ext : null;
 };
 
 export const FileTypeFromBlob = async (blob: Blob): Promise<string | null> => {
 	const buffer = await blob.arrayBuffer().then(Buffer.from);
-	const typeResult = await fileTypeFromBuffer(buffer);
+	const typeResult = await fromBuffer(buffer);
 	return typeResult ? mimeToExtensionMap[typeResult.mime] || typeResult.ext : null;
 };
 
 export const FileTypeFromStream = async (stream: Readable): Promise<string | null> => {
 	const buffer = await getBufferFromStream(stream);
-	const typeResult = await fileTypeFromBuffer(buffer);
+	const typeResult = await fromBuffer(buffer);
 	return typeResult ? mimeToExtensionMap[typeResult.mime] || typeResult.ext : null;
 };
 
@@ -273,7 +273,7 @@ export async function getMimeType(input: any) {
 		throw new Error('Input must be a Buffer, file path, or URL.');
 	}
 
-	const type = await fileTypeFromBuffer(buffer);
+	const type = await fromBuffer(buffer);
 	return type?.mime || 'unknown';
 }
 

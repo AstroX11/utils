@@ -20,7 +20,7 @@ interface RetryConfig {
 export declare function getBuffer(url: string, options?: AxiosRequestConfig, retryConfig?: RetryConfig): Promise<Buffer>;
 export declare function getJson(url: string, options?: AxiosRequestConfig): Promise<any>;
 export declare function postJson(url: string, data: any, options?: AxiosRequestConfig): Promise<any>;
-export declare function getMimeType(input: any): Promise<"unknown" | import("file-type").MimeType>;
+export declare function getMimeType(input: any): Promise<"unknown" | import("file-type/core").MimeType>;
 declare const _default: {
     buffertoJson: (buffer: Buffer) => any;
     jsontoBuffer: (json: object) => Buffer;
